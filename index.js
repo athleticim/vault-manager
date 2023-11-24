@@ -12,22 +12,24 @@ const getHostName = (hostUrl) => {
     return parsedUrl.hostname;
 }
 
-const getDefaultSecretValue = async (keyName) => {
+const getDefaultSecretValue = async (keyName , hostName) => {
+    const hostName = hostName ||  getHostName(process.env.hostUrl);
     const replace = new RegExp('_', 'g');
     const fetchKeyName = keyName.replace(replace, '-');
-    return getKeyFromCache(fetchKeyName, keyName, keyName);
+    return getKeyFromCache(fetchKeyName, keyName, keyName , hostName);
 }
 
-const getConfigSpecificSecretValue = async (keyName, region) => {
-    const configSpecific = await getConfigValueByKey(region);
+const getConfigSpecificSecretValue = async (keyName, region, hostName) => {
+    const hostName = hostName ||  getHostName(process.env.hostUrl);
+    const configSpecific = await getConfigValueByKey(region,hostName);
     const prefixAddedName = constructKey(keyName, configSpecific);
-    return await getKeyFromCache(prefixAddedName, keyName, `${configSpecific}-${keyName}`);
+    return await getKeyFromCache(prefixAddedName, keyName, `${configSpecific}-${keyName}`, hostName);
 }
 
-const getSecretValue = async (keyName) => {
-    const hostName = getHostName(process.env.hostUrl);
+const getSecretValue = async (keyName , hostName) => {
+    const hostName = hostName ||  getHostName(process.env.hostUrl);
     const vaultKeyName = constructKey(keyName, hostName.split('.')[0]);
-    return await getKeyFromCache(vaultKeyName, keyName, `${hostName.split('.')[0]}-${keyName}`);
+    return await getKeyFromCache(vaultKeyName, keyName, `${hostName.split('.')[0]}-${keyName}`, hostName);
 }
 
 const getEnv = (keyName) => {
@@ -43,7 +45,7 @@ const replacePass = (MongoUri, Passsword) => {
     return MongoUri;
 }
 
-const getKeyFromCache = async (vaultKeyName, keyName, configKeyName) => {
+const getKeyFromCache = async (vaultKeyName, keyName, configKeyName , hostName) => {
     if (process.env.gitToken) {
         return getEnv(keyName);
     }
@@ -51,7 +53,7 @@ const getKeyFromCache = async (vaultKeyName, keyName, configKeyName) => {
         mutex.acquire();
         const value = getSecretValueFromCache(vaultKeyName);
         if (value == undefined) {
-            const result = await getAzureVaultKeyAndSet(vaultKeyName);
+            const result = await getAzureVaultKeyAndSet(vaultKeyName, hostName);
             mutex.release();
             return result;
         }
@@ -61,13 +63,13 @@ const getKeyFromCache = async (vaultKeyName, keyName, configKeyName) => {
     return getEnv(keyName);
 }
 
-const getMongoUri = async (dbConfigName) => {
-    const MongoUri = await getConfigValueByKey(dbConfigName);
-    const dbPassword = await getSecretValue(`${dbConfigName}-password`);
+const getMongoUri = async (dbConfigName , hostName) => {
+    const MongoUri = await getConfigValueByKey(dbConfigName , hostName);
+    const dbPassword = await getSecretValue(`${dbConfigName}-password` , hostName);
     return replacePass(MongoUri, dbPassword);
 }
-const getAzureVaultKeyAndSet = async (keyName) => {
-    const result = await getSecretValueFromAure(keyName);
+const getAzureVaultKeyAndSet = async (keyName , hostName) => {
+    const result = await getSecretValueFromAure(keyName, hostName);
     setSecretToCache(result.name, result.value);
     return result.value;
 }

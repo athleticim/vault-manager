@@ -4,10 +4,10 @@ const { getSecretValue } = require('@athleticim/config-manager');
 const { getConfigValueByKey } = require('@athleticim/config-manager/getConfig');
 
 
-const initValutObj = async () => {
-    const tenantId = await getConfigValueByKey('tenantId');
-    const clientId = await getConfigValueByKey('clientId');
-    const vaultName = await getConfigValueByKey('vaultName');
+const initValutObj = async (hostName) => {
+    const tenantId = await getConfigValueByKey('tenantId' , hostName);
+    const clientId = await getConfigValueByKey('clientId', hostName);
+    const vaultName = await getConfigValueByKey('vaultName', hostName);
     const credential = new ClientSecretCredential(
         tenantId,
         clientId,
@@ -28,9 +28,9 @@ const initValutObj = async () => {
 
 
 
-const getSecretValueFromAure = async (keyName) => {
+const getSecretValueFromAure = async (keyName , hostName) => {
     try {
-        const client = await initValutObj();
+        const client = await initValutObj(hostName);
         const value= await client.getSecret(keyName);
         return value;
     } catch (error) {
