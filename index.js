@@ -13,10 +13,10 @@ const getHostName = (hostUrl) => {
 }
 
 const getDefaultSecretValue = async (keyName , hostName) => {
-    const hostName = hostName ||  getHostName(process.env.hostUrl);
+    const hostname = hostName ||  getHostName(process.env.hostUrl);
     const replace = new RegExp('_', 'g');
     const fetchKeyName = keyName.replace(replace, '-');
-    return getKeyFromCache(fetchKeyName, keyName, keyName , hostName);
+    return getKeyFromCache(fetchKeyName, keyName, keyName , hostname);
 }
 
 const getConfigSpecificSecretValue = async (keyName, region, hostName) => {
