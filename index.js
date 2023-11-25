@@ -19,15 +19,15 @@ const getDefaultSecretValue = async (keyName , hostName) => {
     return getKeyFromCache(fetchKeyName, keyName, keyName , hostname);
 }
 
-const getConfigSpecificSecretValue = async (keyName, region, hostName) => {
-    const hostName = hostName ||  getHostName(process.env.hostUrl);
+const getConfigSpecificSecretValue = async (keyName, region, hostname) => {
+    const hostName = hostname ||  getHostName(process.env.hostUrl);
     const configSpecific = await getConfigValueByKey(region,hostName);
     const prefixAddedName = constructKey(keyName, configSpecific);
     return await getKeyFromCache(prefixAddedName, keyName, `${configSpecific}-${keyName}`, hostName);
 }
 
-const getSecretValue = async (keyName , hostName) => {
-    const hostName = hostName ||  getHostName(process.env.hostUrl);
+const getSecretValue = async (keyName , hostname) => {
+    const hostName = hostname ||  getHostName(process.env.hostUrl);
     const vaultKeyName = constructKey(keyName, hostName.split('.')[0]);
     return await getKeyFromCache(vaultKeyName, keyName, `${hostName.split('.')[0]}-${keyName}`, hostName);
 }
