@@ -38,6 +38,12 @@ const getEnv = (keyName) => {
     }
     return undefined;
 }
+const constructKey=(keyName , prefix)=>{
+    const search="_";
+    const replacer=new RegExp(search , 'g');
+    const fetchKeyName=keyName.replace(replacer , '-');
+    return `${prefix}-${fetchKeyName}`
+}
 
 const replacePass = (MongoUri, Passsword) => {
     const replacer = new RegExp('%p', 'g');
